@@ -1,0 +1,81 @@
+# Instalar las bibliotecas requeridas
+# pip install SpeechRecognition pyttsx3 pywhatkit
+
+import speech_recognition as sr
+import pyttsx3
+import pywhatkit
+import webbrowser
+
+# Configuración de reconocimiento de voz
+r = sr.Recognizer()
+mic = sr.Microphone()
+
+# Configuración de texto a voz
+engine = pyttsx3.init()
+
+# Configuración de la voz
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id)  # Puedes cambiar el índice para elegir otra voz
+
+# Función para que el asistente responda preguntas
+def responder_pregunta(texto):
+    # Aquí puedes agregar lógica para procesar y responder a las preguntas
+    respuesta = "Lo siento, no tengo la capacidad de responder esa pregunta en este momento."
+    return respuesta
+
+# Función para que el asistente reproduzca música
+def reproducir_musica(cancion):
+    pywhatkit.playonyt(cancion)
+
+# Función para que el asistente reproduzca videos
+def reproducir_video(video):
+    webbrowser.open(video)
+
+# Función principal para escuchar comandos de voz y ejecutar acciones
+def escuchar_comandos():
+    with mic as source:
+        print("Escuchando...")
+        r.adjust_for_ambient_noise(source)
+        audio = r.listen(source)
+
+    try:
+        print("Reconociendo...")
+        texto = r.recognize_google(audio, language='es-ES')
+        print("Texto reconocido:", texto)
+
+        # Responder a una pregunta
+        if 'pregunta' in texto:
+            pregunta = texto.split('pregunta', 1)[1].strip()
+            respuesta = responder_pregunta(pregunta)
+            engine.say(respuesta)
+
+        # Reproducir música
+        elif 'reproducir música' in texto:
+            cancion = texto.split('reproducir música', 1)[1].strip()
+            engine.say("Reproduciendo música: " + cancion)
+            reproducir_musica(cancion)
+
+        # Reproducir video
+        elif 'reproducir video' in texto:
+            video = texto.split('reproducir video', 1)[1].strip()
+            engine.say("Reproduciendo video: " + video)
+            reproducir_video(video)
+
+        # Salir del programa
+        elif 'adiós' in texto:
+            engine.say("Hasta luego. ¡Que tengas un buen día!")
+            return False
+
+        else:
+            engine.say("Lo siento, no entendí el comando.")
+
+        engine.runAndWait()
+    except Exception as e:
+        print("Error:", str(e))
+
+    return True
+
+# Programa principal
+continuar = True
+while continuar:
+    continuar = escuchar_comandos()
